@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>Página Inicial</h1>
+    <div id="message"></div>
+    <button id="adminButton" style="display: none;">Botão Administrativo</button>
+    <button onclick="logout()">Sair</button>
+
+    <script>
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const response = await fetch('http://localhost:3001/user', {
+                headers: {
+                    'authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                const message = document.getElementById('message')
+
+                var count = 1
+                data.forEach(element => {
+                    const status = element.UserStatus == 1 ? "Ativo" : "Inativo"
+
+                    message.innerText += `Usuario ${count}`
+                    message.innerText += `\nUsuario: ${element.UserName}`;
+                    message.innerText += `\nEmail: ${element.UserEmail}`;
+                    message.innerText += `\nStatus: ${status}\n\n`;
+                    count++
+                    
+                });
+
+                if (data.user.roles.includes('admin')) {
+                    document.getElementById('adminButton').style.display = 'block';
+                }
+                
+           
+            } else {
+                localStorage.removeItem('token');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
